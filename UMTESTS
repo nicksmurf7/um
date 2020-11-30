@@ -1,0 +1,13 @@
+halt.um
+halt-verbose.um
+IO.um
+add.um
+multiply.um
+divide.um
+nand.um
+conditional-move.um
+print-six.um
+mapunmap.um
+segload.um
+loadprogram.um
+50mil.um

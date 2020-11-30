@@ -1,0 +1,146 @@
+#
+# Author: Nick Murphy & Max Robakiewicz
+# nmurph03, mrobak01
+# Comp40 Hw7: Universal Machine
+# Due: Monday November 23 
+
+
+Total Time spent: 24 hours
+Time spent analyzing: 10 hours
+Time spent preparing: 10 hours
+Time spent solving: 4 hours 
+
+Acknowledgements:
+Michael Kotlik, Ben London, Ann-Marie, Miles, Adam Lipson, Max Ramer
+
+Architecture:
+        - um.c: Contains main function for UM, which then calls functions
+                contained in other files. UM.c handles command line inputs
+                as well as memory allocation and reading in instructions from
+                a .um file. Utilizes Bitpack.h to unpack 32-bit instructions
+                as was done in past homeworks. Also utilizes mem.h file that
+                contains the UM struct that has all aspects of our UM. 
+        - UMmath.c: Handles all arithmetic instructions to UM, 
+                    add, multiply, divide, loadval and conditional move
+        - UMsegmem.c: Holds functions for functions that influence 
+                      segments: mapping and unmapping segments, 
+                      segmented load and store and load program.
+        - UMio.c: The purpose of this module is to hold the functions for the
+                  um which do not have to do with either memory or math, it 
+                  holds the IO functions, halt and bitwise NAND.
+        - mem.h:  Contains struct that hold all aspects of our UM, which is
+                  then included by all other files which are run in um. 
+
+        What they know: Each of the .c files have access to the struct Mem
+                        which was defined in mem.h. The struct contains:
+                        UArray m that holds UArrays for each segment within
+                                the UM at an index (the uint32_t identifier)
+                        uint32_t Array r contains all 8 registers that are 
+                                reusables
+                        Stack segs that hold all of the recycled segments
+                                which are used first when a new seg is mapped
+                        uint32_t counter which holds which instruction in 
+                                segment 0 we are currently at
+                        uint32_t currseg which is the next segment that has not
+                                been mapped (chosen if segs is empty)
+        
+        Note: We chose to pass along a single struct which stores all info
+                for the UM which is not needed at times in some of the
+                functions because it makes the function parameter overall more
+                consistent, and limits the number of parameters for some
+                of the functions.
+        
+        Relation: The modules all relate by each of them being a distinct part
+                    of the overall UM. um.c is the main file which runs the
+                    UM until a halt is called and chooses what function to call
+                    based on the op code. As stated above, UMmath handles
+                    the arithmetic, UMsegmem deals with segments and memory,
+                    and UMio is the miscellaneous functions.
+                        
+_______________________________________________________________________________
+Correctly implemented aspects of program:
+    - Eight general-purpose registers that each hold one 32-bit word
+    - An I/O device capable of displaying ASCII characters and 
+        performing input and output of unsigned 8-bit characters. 
+        The device uses stdin and stdout to implement the UM’s I/O 
+        instructions.
+    - 32-bit program counter
+    - 0 memory leaks or errors under any tested circumstance
+        
+Incorrectly implemented aspects of program:
+   - None
+
+Departures from Design:
+    Our main departure from the design we created was how we made files to
+    hold the functions that our UM calls. We originally had planned to split
+    them up based on their function as shown in lecture. However, this then 
+    ended up making situations where files would only have one function which
+    did not make a lot of sense. So, instead we kept the math file, segmented
+    memory file, but put all of the four remaining functions into the io file,
+    instead of having 3 files for 4 functions. Then, besides this even though
+    we did poorly on our design document there were no other real departures. 
+    We discussed our plans with TA's and they all seemed to believe our 
+    structure would work and our plan was okay, we just did not properly
+    explain it within our design document.
+
+Testing Methods: 
+    - Wrote our own umlabwrite.c and umlab.c to test every module of
+        our UM seperately but at the same time to ensure that we didn't
+        accidentally break something in our UM
+    - Before writing our UM we came up with tests to ensure that we don't
+        test our UM without addressing errors
+    - Utilized provided test files as well as catch-signal, time -p and 
+        valgrind commands 
+   
+Time for 50 million UM Instructions:
+    2.01 seconds
+    We created a new test called 50mil.um, which completes 50 million 
+            instructions
+    We were able to time this, and we found it took 2.01 seconds to complete
+
+UMTESTS:
+    halt.um: Checks out halt by making sure the file is exited properly without
+                reaching any errors
+
+    halt-verbose.um: Ensures halt is working, because if it did not it would
+                        print out "Bad!"
+                        
+    IO.um: Checks that a value can be inputted into UM, then
+           outputs that value to check output function
+           
+    add.um: Tests add, by making a small addition print out 1, then we test
+            to ensure that the mod part of add is working which the number 
+            printed out is 8 after surpassing 2^32 (checked with output)
+            
+    multiply.um: Checks that inputted values can be multiplied
+                 and that the product can be stored (checked with output)
+                 Tests that we mod by 2^32 
+                 
+    divide.um: Checks that inputted values can be divided
+                 and that the quotient can be stored (checked with output)
+                  
+    nand.um: Checks that inputted values can be Bitwise nanded
+                 and that the bitwise negation can be stored 
+                        (checked with output) 
+                        
+    conditional-move.um: Checks conditional move by loading 0 and 1, and
+                         then calling conditional move using each to see if
+                         our function catches the difference
+                         
+    print-six.um: Checks that loadval, output and add are functional, 
+                    prints the number 6
+                    
+    mapunmap.um: Checks both map segment and unmap segment functions
+                 by mapping segments and then unmapping same segments
+                 
+    segload.um: Checks both segmented load and segmented store functions
+                 by storing segments and then loading same segments
+
+    loadprogram.um: Loads segment with instructions to load value, then print
+                    then halt, then checks to ensure that segment 0 was 
+                    loaded with these instructions
+                    
+    50mil.um: Checks how fast our program can run 50 million instructions
+                by creating a loop in the program which halts after the 
+                50 million instructions have been ran.
+
